@@ -1,0 +1,684 @@
+
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--color-background-tertiary);color:var(--color-text-primary);min-height:100vh}
+  .hidden{display:none!important}
+  /* LOGIN */
+  #login-screen{min-height:600px;display:flex;align-items:center;justify-content:center;padding:2rem}
+  .login-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:2.5rem;width:100%;max-width:400px}
+  .login-logo{display:flex;align-items:center;gap:10px;margin-bottom:2rem}
+  .login-logo-icon{width:40px;height:40px;background:#0C447C;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#E6F1FB;font-size:20px}
+  .login-logo h1{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+  .login-logo p{font-size:12px;color:var(--color-text-secondary)}
+  .form-group{margin-bottom:1rem}
+  .form-group label{display:block;font-size:13px;color:var(--color-text-secondary);margin-bottom:6px}
+  .form-group input,.form-group select{width:100%;padding:8px 12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:14px}
+  .btn-primary{width:100%;padding:10px;background:#0C447C;color:#E6F1FB;border:none;border-radius:var(--border-radius-md);font-size:14px;font-weight:500;cursor:pointer;margin-top:0.5rem}
+  .btn-primary:hover{background:#185FA5}
+  .login-hint{margin-top:1.5rem;padding:1rem;background:var(--color-background-secondary);border-radius:var(--border-radius-md);font-size:12px;color:var(--color-text-secondary)}
+  .login-hint b{color:var(--color-text-primary)}
+  /* APP */
+  #app-screen{display:none;flex-direction:column;min-height:600px}
+  /* TOPBAR */
+  .topbar{background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .topbar-left{display:flex;align-items:center;gap:12px}
+  .topbar-icon{width:32px;height:32px;background:#0C447C;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#E6F1FB;font-size:16px}
+  .topbar-title{font-size:15px;font-weight:500}
+  .topbar-right{display:flex;align-items:center;gap:12px}
+  .role-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500}
+  .role-admin{background:#E6F1FB;color:#0C447C}
+  .role-auxiliar{background:#EAF3DE;color:#3B6D11}
+  .role-medico{background:#EEEDFE;color:#3C3489}
+  .user-info{font-size:13px;color:var(--color-text-secondary)}
+  .btn-logout{background:none;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:5px 12px;font-size:12px;cursor:pointer;color:var(--color-text-secondary)}
+  .btn-logout:hover{background:var(--color-background-secondary)}
+  /* LAYOUT */
+  .app-body{display:flex;flex:1}
+  /* SIDEBAR */
+  .sidebar{width:200px;min-width:200px;background:var(--color-background-primary);border-right:0.5px solid var(--color-border-tertiary);padding:1rem 0;display:flex;flex-direction:column;gap:2px}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;cursor:pointer;color:var(--color-text-secondary);border-radius:0;transition:all .15s}
+  .nav-item:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+  .nav-item.active{background:var(--color-background-secondary);color:#0C447C;font-weight:500;border-left:2px solid #0C447C}
+  .nav-item i{font-size:16px}
+  .nav-section{font-size:10px;font-weight:500;color:var(--color-text-tertiary);padding:10px 16px 4px;letter-spacing:.08em;text-transform:uppercase}
+  /* CONTENT */
+  .content{flex:1;padding:1.5rem;overflow:auto}
+  .page{display:none}
+  .page.active{display:block}
+  /* CARDS / TABLES */
+  .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+  .page-header h2{font-size:18px;font-weight:500}
+  .page-header p{font-size:13px;color:var(--color-text-secondary);margin-top:2px}
+  .btn-add{display:flex;align-items:center;gap:6px;padding:8px 14px;background:#0C447C;color:#E6F1FB;border:none;border-radius:var(--border-radius-md);font-size:13px;cursor:pointer}
+  .btn-add:hover{background:#185FA5}
+  .btn-add:disabled{opacity:.4;cursor:not-allowed}
+  .data-table{width:100%;border-collapse:collapse;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;font-size:13px}
+  .data-table th{background:var(--color-background-secondary);padding:10px 14px;text-align:left;font-weight:500;font-size:12px;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary)}
+  .data-table td{padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
+  .data-table tr:last-child td{border-bottom:none}
+  .data-table tr:hover td{background:var(--color-background-secondary)}
+  .status-badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
+  .status-active{background:#EAF3DE;color:#3B6D11}
+  .status-inactive{background:#F1EFE8;color:#5F5E5A}
+  .tbl-actions{display:flex;gap:6px}
+  .btn-icon{background:none;border:0.5px solid var(--color-border-tertiary);border-radius:6px;padding:4px 8px;cursor:pointer;color:var(--color-text-secondary);font-size:13px}
+  .btn-icon:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+  .btn-icon.danger:hover{color:#A32D2D;border-color:#F09595;background:#FCEBEB}
+  .btn-icon:disabled{opacity:.3;cursor:not-allowed}
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:200;min-height:600px}
+  .modal{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.75rem;width:92%;max-width:460px}
+  .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+  .modal-header h3{font-size:16px;font-weight:500}
+  .btn-close{background:none;border:none;cursor:pointer;color:var(--color-text-secondary);font-size:18px}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .modal .form-group{margin-bottom:14px}
+  .modal .form-group label{font-size:12px}
+  .modal .form-group input,.modal .form-group select,.modal .form-group textarea{width:100%;padding:7px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);font-size:13px}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:1rem}
+  .btn-cancel{padding:8px 16px;background:none;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:13px;cursor:pointer;color:var(--color-text-secondary)}
+  .btn-save{padding:8px 16px;background:#0C447C;color:#E6F1FB;border:none;border-radius:var(--border-radius-md);font-size:13px;cursor:pointer}
+  .btn-save:hover{background:#185FA5}
+  /* DASHBOARD */
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1.5rem}
+  .stat-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem}
+  .stat-card .label{font-size:12px;color:var(--color-text-secondary);margin-bottom:6px}
+  .stat-card .value{font-size:22px;font-weight:500}
+  .stat-card .sublabel{font-size:11px;color:var(--color-text-tertiary);margin-top:2px}
+  /* ROLES */
+  .role-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);margin-bottom:1rem;overflow:hidden}
+  .role-card-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:0.5px solid var(--color-border-tertiary)}
+  .role-card-header h3{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px}
+  .perm-grid{display:grid;grid-template-columns:180px repeat(4,1fr);font-size:12px}
+  .perm-grid .head{background:var(--color-background-secondary);padding:8px 10px;font-weight:500;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary)}
+  .perm-grid .cell{padding:8px 10px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:center}
+  .perm-grid .cell.label{justify-content:flex-start;color:var(--color-text-primary);font-weight:400}
+  .perm-grid .cell:last-child,.perm-grid .head:last-child{border-right:none}
+  .toggle{width:34px;height:18px;background:var(--color-border-tertiary);border-radius:9px;position:relative;cursor:pointer;transition:.2s;border:none;flex-shrink:0}
+  .toggle.on{background:#0C447C}
+  .toggle::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:2px;left:2px;transition:.2s}
+  .toggle.on::after{left:18px}
+  .toggle:disabled{opacity:.3;cursor:not-allowed}
+  /* ALERT */
+  .toast{position:fixed;bottom:20px;right:20px;background:#0C447C;color:#E6F1FB;padding:10px 18px;border-radius:var(--border-radius-md);font-size:13px;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none}
+  .toast.show{opacity:1}
+  .no-perm{padding:2rem;text-align:center;color:var(--color-text-secondary);font-size:13px}
+  .no-perm i{font-size:32px;display:block;margin-bottom:8px}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon"><i class="ti ti-stethoscope" aria-hidden="true"></i></div>
+      <div><h1>MediCitas</h1><p>Sistema de Gestión Médica</p></div>
+    </div>
+    <div class="form-group">
+      <label>Usuario</label>
+      <select id="login-user">
+        <option value="admin">admin — Administrador</option>
+        <option value="auxiliar">auxiliar — Auxiliar Médico</option>
+        <option value="medico">medico — Médico</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="login-pass" value="****" placeholder="Contraseña">
+    </div>
+    <button class="btn-primary" onclick="doLogin()"><i class="ti ti-login" aria-hidden="true"></i> Iniciar Sesión</button>
+    <div class="login-hint">
+      <b>Usuarios demo:</b><br>
+      admin / Citas2024# — Administrador<br>
+      auxiliar / Aux2024# — Auxiliar Médico<br>
+      medico / Med2024# — Médico
+    </div>
+  </div>
+</div>
+
+<div id="app-screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-icon"><i class="ti ti-stethoscope" aria-hidden="true"></i></div>
+      <div class="topbar-title">MediCitas</div>
+    </div>
+    <div class="topbar-right">
+      <span id="role-badge" class="role-badge"></span>
+      <span id="user-name" class="user-info"></span>
+      <button class="btn-logout" onclick="doLogout()"><i class="ti ti-logout" aria-hidden="true"></i> Salir</button>
+    </div>
+  </div>
+  <div class="app-body">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="content">
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-header"><div><h2>Panel de Control</h2><p>Resumen del sistema</p></div></div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="label">Consultorios</div><div class="value" id="stat-consultorios">0</div><div class="sublabel">registrados</div></div>
+          <div class="stat-card"><div class="label">Médicos</div><div class="value" id="stat-medicos">0</div><div class="sublabel">activos</div></div>
+          <div class="stat-card"><div class="label">Pacientes</div><div class="value">8</div><div class="sublabel">registrados</div></div>
+          <div class="stat-card"><div class="label">Citas hoy</div><div class="value">3</div><div class="sublabel">programadas</div></div>
+        </div>
+        <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem">
+          <div style="font-size:13px;font-weight:500;margin-bottom:1rem">Próximas citas</div>
+          <table class="data-table" style="border:none">
+            <thead><tr><th>#Cita</th><th>Paciente</th><th>Médico</th><th>Hora</th><th>Estado</th></tr></thead>
+            <tbody>
+              <tr><td>CIT-001</td><td>Ana García</td><td>Dr. Ramírez</td><td>08:00</td><td><span class="status-badge status-active">Confirmada</span></td></tr>
+              <tr><td>CIT-002</td><td>Carlos López</td><td>Dra. Torres</td><td>09:30</td><td><span class="status-badge role-admin">Programada</span></td></tr>
+              <tr><td>CIT-003</td><td>María Ruiz</td><td>Dr. Ramírez</td><td>11:00</td><td><span class="status-badge role-admin">Programada</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CONSULTORIOS CRUD -->
+      <div class="page" id="page-consultorios">
+        <div class="page-header">
+          <div><h2>Consultorios</h2><p>Gestión de consultorios por sede</p></div>
+          <button class="btn-add" id="btn-add-consultorio" onclick="openConsultorioModal()">
+            <i class="ti ti-plus" aria-hidden="true"></i> Nuevo Consultorio
+          </button>
+        </div>
+        <div id="no-perm-consultorios" class="no-perm hidden"><i class="ti ti-lock"></i>Sin permiso para ver esta sección</div>
+        <table class="data-table" id="tbl-consultorios">
+          <thead><tr><th>Código</th><th>Nombre</th><th>Sede</th><th>Piso</th><th>Capacidad</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody id="tbody-consultorios"></tbody>
+        </table>
+      </div>
+
+      <!-- MÉDICOS CRUD -->
+      <div class="page" id="page-medicos">
+        <div class="page-header">
+          <div><h2>Médicos</h2><p>Registro de médicos del sistema</p></div>
+          <button class="btn-add" id="btn-add-medico" onclick="openMedicoModal()">
+            <i class="ti ti-plus" aria-hidden="true"></i> Nuevo Médico
+          </button>
+        </div>
+        <div id="no-perm-medicos" class="no-perm hidden"><i class="ti ti-lock"></i>Sin permiso para ver esta sección</div>
+        <table class="data-table" id="tbl-medicos">
+          <thead><tr><th>Registro</th><th>Nombre</th><th>Especialidad</th><th>Tarifa</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody id="tbody-medicos"></tbody>
+        </table>
+      </div>
+
+      <!-- ROLES -->
+      <div class="page" id="page-roles">
+        <div class="page-header"><div><h2>Gestión de Roles y Permisos</h2><p>Configura el acceso por rol</p></div></div>
+        <div id="no-perm-roles" class="no-perm hidden"><i class="ti ti-lock"></i>Solo el administrador puede gestionar roles</div>
+        <div id="roles-content"></div>
+      </div>
+
+      <!-- ARQUITECTURA -->
+      <div class="page" id="page-arch">
+        <div class="page-header"><div><h2>Arquitectura del Proyecto</h2><p>Java Spring Boot — Hexagonal + Vertical Slicing</p></div></div>
+        <div style="display:grid;gap:1rem">
+          <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem">
+            <div style="font-size:13px;font-weight:500;margin-bottom:12px;color:#0C447C"><i class="ti ti-layers-intersect" aria-hidden="true"></i> Estructura de paquetes</div>
+            <pre style="font-size:11px;color:var(--color-text-secondary);line-height:1.8;overflow:auto">com.medicitas/
+├── shared/                        ← Infraestructura compartida
+│   ├── config/
+│   │   ├── SecurityConfig.java
+│   │   └── JwtConfig.java
+│   └── exception/
+│       └── GlobalExceptionHandler.java
+│
+├── consultorios/                  ← Vertical Slice: Consultorios
+│   ├── domain/
+│   │   ├── Consultorio.java       (Entidad)
+│   │   └── ConsultorioPort.java   (Puerto salida)
+│   ├── application/
+│   │   ├── ConsultorioService.java
+│   │   └── dto/
+│   │       ├── ConsultorioRequestDto.java
+│   │       └── ConsultorioResponseDto.java
+│   └── infrastructure/
+│       ├── ConsultorioController.java  (Puerto entrada HTTP)
+│       ├── ConsultorioRepository.java  (Oracle JPA)
+│       └── ConsultorioMapper.java
+│
+├── medicos/                       ← Vertical Slice: Médicos
+│   ├── domain/
+│   │   ├── Medico.java
+│   │   └── MedicoPort.java
+│   ├── application/
+│   │   ├── MedicoService.java
+│   │   └── dto/
+│   └── infrastructure/
+│       ├── MedicoController.java
+│       └── MedicoRepository.java
+│
+└── auth/                          ← Vertical Slice: Auth/Roles
+    ├── domain/
+    │   └── RolPermiso.java
+    ├── application/
+    │   └── AuthService.java
+    └── infrastructure/
+        ├── AuthController.java
+        └── JwtFilter.java</pre>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+            <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem">
+              <div style="font-size:13px;font-weight:500;margin-bottom:10px"><i class="ti ti-hexagon" aria-hidden="true"></i> Puertos y Adaptadores</div>
+              <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.9">
+                <b style="font-size:11px;color:var(--color-text-tertiary)">ENTRADA (Driving)</b><br>
+                REST Controllers (HTTP)<br>
+                Request DTOs + Validaciones<br><br>
+                <b style="font-size:11px;color:var(--color-text-tertiary)">SALIDA (Driven)</b><br>
+                JPA Repositories (Oracle XE)<br>
+                Port interfaces → impl<br><br>
+                <b style="font-size:11px;color:var(--color-text-tertiary)">DOMINIO (Núcleo)</b><br>
+                Entidades puras<br>
+                Reglas de negocio<br>
+                Sin dependencias externas
+              </div>
+            </div>
+            <div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem">
+              <div style="font-size:13px;font-weight:500;margin-bottom:10px"><i class="ti ti-stack" aria-hidden="true"></i> Stack técnico</div>
+              <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.9">
+                <b style="color:var(--color-text-primary)">Java 17</b> + Spring Boot 3.x<br>
+                <b style="color:var(--color-text-primary)">Spring Security</b> + JWT<br>
+                <b style="color:var(--color-text-primary)">Oracle XE 18c</b> + JPA/Hibernate<br>
+                <b style="color:var(--color-text-primary)">Esquema:</b> APP_CITAS<br>
+                <b style="color:var(--color-text-primary)">Lombok</b> + MapStruct<br>
+                <b style="color:var(--color-text-primary)">OpenAPI 3</b> / Swagger UI<br>
+                <b style="color:var(--color-text-primary)">Maven</b> multi-module
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONSULTORIO -->
+<div class="modal-overlay hidden" id="modal-consultorio">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-cons-title">Nuevo Consultorio</h3>
+      <button class="btn-close" onclick="closeModal('modal-consultorio')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Código</label><input id="cons-codigo" placeholder="C-001"></div>
+      <div class="form-group"><label>Piso</label><input id="cons-piso" type="number" placeholder="1"></div>
+    </div>
+    <div class="form-group"><label>Nombre / Descripción</label><input id="cons-nombre" placeholder="Consultorio de Cardiología"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Sede</label>
+        <select id="cons-sede">
+          <option>Sede Norte</option><option>Sede Sur</option><option>Sede Centro</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Capacidad</label><input id="cons-capacidad" type="number" value="1" min="1"></div>
+    </div>
+    <div class="form-group"><label>Estado</label>
+      <select id="cons-estado"><option value="S">Activo</option><option value="N">Inactivo</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-consultorio')">Cancelar</button>
+      <button class="btn-save" onclick="saveConsultorio()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MÉDICO -->
+<div class="modal-overlay hidden" id="modal-medico">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-med-title">Nuevo Médico</h3>
+      <button class="btn-close" onclick="closeModal('modal-medico')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Primer nombre</label><input id="med-nombre1" placeholder="Juan"></div>
+      <div class="form-group"><label>Segundo nombre</label><input id="med-nombre2" placeholder="Carlos"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Primer apellido</label><input id="med-ap1" placeholder="Ramírez"></div>
+      <div class="form-group"><label>Segundo apellido</label><input id="med-ap2" placeholder="Torres"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>N° Registro</label><input id="med-registro" placeholder="RM-12345"></div>
+      <div class="form-group"><label>Especialidad</label>
+        <select id="med-esp">
+          <option>Cardiología</option><option>Pediatría</option><option>Dermatología</option><option>Oftalmología</option><option>Medicina General</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Tarifa consulta (COP)</label><input id="med-tarifa" type="number" placeholder="80000"></div>
+      <div class="form-group"><label>Estado</label>
+        <select id="med-estado"><option value="S">Activo</option><option value="N">Inactivo</option></select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('modal-medico')">Cancelar</button>
+      <button class="btn-save" onclick="saveMedico()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const USERS = {
+  admin: { name: 'Administrador', role: 'rol_administrativo', label: 'Administrador', badgeClass: 'role-admin' },
+  auxiliar: { name: 'Auxiliar Médico', role: 'rol_auxiliar_medico', label: 'Auxiliar Médico', badgeClass: 'role-auxiliar' },
+  medico: { name: 'Dr. Ramírez', role: 'rol_medico', label: 'Médico', badgeClass: 'role-medico' }
+};
+
+const DEFAULT_PERMS = {
+  rol_administrativo: {
+    CONSULTORIOS: { ver: true, crear: true, editar: true, eliminar: true },
+    MEDICOS: { ver: true, crear: true, editar: true, eliminar: true },
+    PACIENTES: { ver: true, crear: true, editar: true, eliminar: true },
+    CITAS_MEDICAS: { ver: true, crear: true, editar: true, eliminar: true },
+    AUDITORIA: { ver: true, crear: false, editar: false, eliminar: false }
+  },
+  rol_auxiliar_medico: {
+    CONSULTORIOS: { ver: true, crear: false, editar: false, eliminar: false },
+    MEDICOS: { ver: true, crear: false, editar: false, eliminar: false },
+    PACIENTES: { ver: true, crear: true, editar: true, eliminar: false },
+    CITAS_MEDICAS: { ver: true, crear: true, editar: true, eliminar: false },
+    AUDITORIA: { ver: false, crear: false, editar: false, eliminar: false }
+  },
+  rol_medico: {
+    CONSULTORIOS: { ver: true, crear: false, editar: false, eliminar: false },
+    MEDICOS: { ver: true, crear: false, editar: false, eliminar: false },
+    PACIENTES: { ver: true, crear: false, editar: false, eliminar: false },
+    CITAS_MEDICAS: { ver: true, crear: false, editar: true, eliminar: false },
+    AUDITORIA: { ver: false, crear: false, editar: false, eliminar: false }
+  }
+};
+
+let perms = JSON.parse(JSON.stringify(DEFAULT_PERMS));
+let currentUser = null;
+let editingConsultorioId = null;
+let editingMedicoId = null;
+
+let consultorios = [
+  { id: 1, codigo: 'C-001', nombre: 'Consultorio Cardiología', sede: 'Sede Norte', piso: 2, capacidad: 1, estado: 'S' },
+  { id: 2, codigo: 'C-002', nombre: 'Consultorio Pediatría', sede: 'Sede Norte', piso: 1, capacidad: 2, estado: 'S' },
+  { id: 3, codigo: 'C-003', nombre: 'Consultorio Dermatología', sede: 'Sede Sur', piso: 3, capacidad: 1, estado: 'N' }
+];
+let medicos = [
+  { id: 1, registro: 'RM-10001', nombre: 'Juan Carlos Ramírez Torres', especialidad: 'Cardiología', tarifa: 120000, estado: 'S' },
+  { id: 2, registro: 'RM-10002', nombre: 'María Claudia Torres Vega', especialidad: 'Pediatría', tarifa: 90000, estado: 'S' },
+  { id: 3, registro: 'RM-10003', nombre: 'Pedro Luis Gómez Ríos', especialidad: 'Dermatología', tarifa: 100000, estado: 'N' }
+];
+let nextConsId = 4, nextMedId = 4;
+
+const NAV = [
+  { id: 'dashboard', label: 'Dashboard', icon: 'ti-layout-dashboard', section: null },
+  { id: 'consultorios', label: 'Consultorios', icon: 'ti-building-hospital', section: 'Catálogos' },
+  { id: 'medicos', label: 'Médicos', icon: 'ti-stethoscope', section: null },
+  { id: 'roles', label: 'Roles y Permisos', icon: 'ti-shield-lock', section: 'Administración', adminOnly: false },
+  { id: 'arch', label: 'Arquitectura', icon: 'ti-code', section: null }
+];
+
+function doLogin() {
+  const u = document.getElementById('login-user').value;
+  currentUser = { ...USERS[u], username: u };
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'flex';
+  document.getElementById('role-badge').textContent = currentUser.label;
+  document.getElementById('role-badge').className = 'role-badge ' + currentUser.badgeClass;
+  document.getElementById('user-name').textContent = currentUser.name;
+  buildSidebar();
+  showPage('dashboard');
+  updateStats();
+}
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-screen').style.display = 'none';
+}
+
+function buildSidebar() {
+  const sb = document.getElementById('sidebar');
+  let html = '';
+  let lastSection = null;
+  NAV.forEach(n => {
+    if (n.section && n.section !== lastSection) {
+      html += `<div class="nav-section">${n.section}</div>`;
+      lastSection = n.section;
+    }
+    html += `<div class="nav-item" id="nav-${n.id}" onclick="showPage('${n.id}')"><i class="ti ${n.icon}" aria-hidden="true"></i>${n.label}</div>`;
+  });
+  sb.innerHTML = html;
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('page-' + id);
+  if (pg) pg.classList.add('active');
+  const ni = document.getElementById('nav-' + id);
+  if (ni) ni.classList.add('active');
+  if (id === 'consultorios') renderConsultorios();
+  if (id === 'medicos') renderMedicos();
+  if (id === 'roles') renderRoles();
+}
+
+function can(table, action) {
+  const r = currentUser?.role;
+  return perms[r]?.[table]?.[action] ?? false;
+}
+
+function updateStats() {
+  document.getElementById('stat-consultorios').textContent = consultorios.filter(c => c.estado === 'S').length;
+  document.getElementById('stat-medicos').textContent = medicos.filter(m => m.estado === 'S').length;
+}
+
+function renderConsultorios() {
+  const canVer = can('CONSULTORIOS', 'ver');
+  const canCrear = can('CONSULTORIOS', 'crear');
+  const canEditar = can('CONSULTORIOS', 'editar');
+  const canEliminar = can('CONSULTORIOS', 'eliminar');
+  document.getElementById('no-perm-consultorios').classList.toggle('hidden', canVer);
+  document.getElementById('tbl-consultorios').classList.toggle('hidden', !canVer);
+  document.getElementById('btn-add-consultorio').disabled = !canCrear;
+  if (!canVer) return;
+  const tbody = document.getElementById('tbody-consultorios');
+  tbody.innerHTML = consultorios.map(c => `
+    <tr>
+      <td>${c.codigo}</td>
+      <td>${c.nombre}</td>
+      <td>${c.sede}</td>
+      <td>${c.piso}</td>
+      <td>${c.capacidad}</td>
+      <td><span class="status-badge ${c.estado === 'S' ? 'status-active' : 'status-inactive'}">${c.estado === 'S' ? 'Activo' : 'Inactivo'}</span></td>
+      <td><div class="tbl-actions">
+        <button class="btn-icon" onclick="editConsultorio(${c.id})" ${!canEditar ? 'disabled' : ''} title="Editar"><i class="ti ti-edit"></i></button>
+        <button class="btn-icon danger" onclick="deleteConsultorio(${c.id})" ${!canEliminar ? 'disabled' : ''} title="Eliminar"><i class="ti ti-trash"></i></button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function renderMedicos() {
+  const canVer = can('MEDICOS', 'ver');
+  const canCrear = can('MEDICOS', 'crear');
+  const canEditar = can('MEDICOS', 'editar');
+  const canEliminar = can('MEDICOS', 'eliminar');
+  document.getElementById('no-perm-medicos').classList.toggle('hidden', canVer);
+  document.getElementById('tbl-medicos').classList.toggle('hidden', !canVer);
+  document.getElementById('btn-add-medico').disabled = !canCrear;
+  if (!canVer) return;
+  const tbody = document.getElementById('tbody-medicos');
+  tbody.innerHTML = medicos.map(m => `
+    <tr>
+      <td>${m.registro}</td>
+      <td>${m.nombre}</td>
+      <td>${m.especialidad}</td>
+      <td>$${m.tarifa.toLocaleString('es-CO')}</td>
+      <td><span class="status-badge ${m.estado === 'S' ? 'status-active' : 'status-inactive'}">${m.estado === 'S' ? 'Activo' : 'Inactivo'}</span></td>
+      <td><div class="tbl-actions">
+        <button class="btn-icon" onclick="editMedico(${m.id})" ${!canEditar ? 'disabled' : ''} title="Editar"><i class="ti ti-edit"></i></button>
+        <button class="btn-icon danger" onclick="deleteMedico(${m.id})" ${!canEliminar ? 'disabled' : ''} title="Eliminar"><i class="ti ti-trash"></i></button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function renderRoles() {
+  const isAdmin = currentUser?.role === 'rol_administrativo';
+  document.getElementById('no-perm-roles').classList.toggle('hidden', isAdmin);
+  document.getElementById('roles-content').classList.toggle('hidden', !isAdmin);
+  if (!isAdmin) return;
+  const tables = ['CONSULTORIOS', 'MEDICOS', 'PACIENTES', 'CITAS_MEDICAS', 'AUDITORIA'];
+  const actions = ['ver', 'crear', 'editar', 'eliminar'];
+  const roles = [
+    { key: 'rol_administrativo', label: 'Administrador', badge: 'role-admin', icon: 'ti-crown' },
+    { key: 'rol_auxiliar_medico', label: 'Auxiliar Médico', badge: 'role-auxiliar', icon: 'ti-user-check' },
+    { key: 'rol_medico', label: 'Médico', badge: 'role-medico', icon: 'ti-stethoscope' }
+  ];
+  const rc = document.getElementById('roles-content');
+  rc.innerHTML = roles.map(r => `
+    <div class="role-card">
+      <div class="role-card-header">
+        <h3><i class="ti ${r.icon}" aria-hidden="true" style="font-size:16px"></i> ${r.label} <span class="role-badge ${r.badge}">${r.key}</span></h3>
+        <span style="font-size:12px;color:var(--color-text-tertiary)">Spring Security Authority</span>
+      </div>
+      <div class="perm-grid">
+        <div class="head">Módulo</div>
+        ${actions.map(a => `<div class="head" style="text-align:center">${a.charAt(0).toUpperCase()+a.slice(1)}</div>`).join('')}
+        ${tables.map(t => `
+          <div class="cell label"><i class="ti ti-table" aria-hidden="true" style="font-size:13px;margin-right:6px;color:var(--color-text-tertiary)"></i>${t}</div>
+          ${actions.map(a => `
+            <div class="cell">
+              <button class="toggle ${perms[r.key][t][a] ? 'on' : ''}" 
+                onclick="togglePerm('${r.key}','${t}','${a}',this)"
+                title="${perms[r.key][t][a] ? 'Activo' : 'Inactivo'}"
+                aria-label="${a} ${t} ${r.label}">
+              </button>
+            </div>`).join('')}
+        `).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function togglePerm(role, table, action, btn) {
+  perms[role][table][action] = !perms[role][table][action];
+  btn.classList.toggle('on', perms[role][table][action]);
+  showToast('Permiso actualizado');
+}
+
+function openConsultorioModal(id = null) {
+  editingConsultorioId = id;
+  document.getElementById('modal-cons-title').textContent = id ? 'Editar Consultorio' : 'Nuevo Consultorio';
+  if (id) {
+    const c = consultorios.find(x => x.id === id);
+    document.getElementById('cons-codigo').value = c.codigo;
+    document.getElementById('cons-nombre').value = c.nombre;
+    document.getElementById('cons-piso').value = c.piso;
+    document.getElementById('cons-capacidad').value = c.capacidad;
+    document.getElementById('cons-estado').value = c.estado;
+    document.getElementById('cons-sede').value = c.sede;
+  } else {
+    ['cons-codigo','cons-nombre','cons-piso'].forEach(f => document.getElementById(f).value = '');
+    document.getElementById('cons-capacidad').value = 1;
+    document.getElementById('cons-estado').value = 'S';
+  }
+  document.getElementById('modal-consultorio').classList.remove('hidden');
+}
+
+function editConsultorio(id) { openConsultorioModal(id); }
+
+function saveConsultorio() {
+  const codigo = document.getElementById('cons-codigo').value.trim();
+  const nombre = document.getElementById('cons-nombre').value.trim();
+  if (!codigo || !nombre) { showToast('Complete los campos requeridos'); return; }
+  const data = {
+    codigo, nombre,
+    sede: document.getElementById('cons-sede').value,
+    piso: parseInt(document.getElementById('cons-piso').value) || 1,
+    capacidad: parseInt(document.getElementById('cons-capacidad').value) || 1,
+    estado: document.getElementById('cons-estado').value
+  };
+  if (editingConsultorioId) {
+    const i = consultorios.findIndex(c => c.id === editingConsultorioId);
+    consultorios[i] = { ...consultorios[i], ...data };
+    showToast('Consultorio actualizado');
+  } else {
+    consultorios.push({ id: nextConsId++, ...data });
+    showToast('Consultorio creado');
+  }
+  closeModal('modal-consultorio');
+  renderConsultorios();
+  updateStats();
+}
+
+function deleteConsultorio(id) {
+  if (!confirm('¿Eliminar este consultorio?')) return;
+  consultorios = consultorios.filter(c => c.id !== id);
+  renderConsultorios();
+  updateStats();
+  showToast('Consultorio eliminado');
+}
+
+function openMedicoModal(id = null) {
+  editingMedicoId = id;
+  document.getElementById('modal-med-title').textContent = id ? 'Editar Médico' : 'Nuevo Médico';
+  if (id) {
+    const m = medicos.find(x => x.id === id);
+    const parts = m.nombre.split(' ');
+    document.getElementById('med-nombre1').value = parts[0] || '';
+    document.getElementById('med-nombre2').value = parts[1] || '';
+    document.getElementById('med-ap1').value = parts[2] || '';
+    document.getElementById('med-ap2').value = parts[3] || '';
+    document.getElementById('med-registro').value = m.registro;
+    document.getElementById('med-tarifa').value = m.tarifa;
+    document.getElementById('med-estado').value = m.estado;
+    document.getElementById('med-esp').value = m.especialidad;
+  } else {
+    ['med-nombre1','med-nombre2','med-ap1','med-ap2','med-registro','med-tarifa'].forEach(f => document.getElementById(f).value = '');
+    document.getElementById('med-estado').value = 'S';
+  }
+  document.getElementById('modal-medico').classList.remove('hidden');
+}
+
+function editMedico(id) { openMedicoModal(id); }
+
+function saveMedico() {
+  const n1 = document.getElementById('med-nombre1').value.trim();
+  const reg = document.getElementById('med-registro').value.trim();
+  if (!n1 || !reg) { showToast('Complete los campos requeridos'); return; }
+  const nombre = [n1, document.getElementById('med-nombre2').value, document.getElementById('med-ap1').value, document.getElementById('med-ap2').value].filter(Boolean).join(' ');
+  const data = {
+    nombre, registro: reg,
+    especialidad: document.getElementById('med-esp').value,
+    tarifa: parseInt(document.getElementById('med-tarifa').value) || 0,
+    estado: document.getElementById('med-estado').value
+  };
+  if (editingMedicoId) {
+    const i = medicos.findIndex(m => m.id === editingMedicoId);
+    medicos[i] = { ...medicos[i], ...data };
+    showToast('Médico actualizado');
+  } else {
+    medicos.push({ id: nextMedId++, ...data });
+    showToast('Médico registrado');
+  }
+  closeModal('modal-medico');
+  renderMedicos();
+  updateStats();
+}
+
+function deleteMedico(id) {
+  if (!confirm('¿Eliminar este médico?')) return;
+  medicos = medicos.filter(m => m.id !== id);
+  renderMedicos();
+  updateStats();
+  showToast('Médico eliminado');
+}
+
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
