@@ -40,7 +40,7 @@ export default function Login() {
                   d="M4.5 12.75l7.5-7.5 7.5 7.5m-15 6l7.5-7.5 7.5 7.5" />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-white">ClinicApp</h1>
+            <h1 className="text-2xl font-bold text-white">ClinCore</h1>
             <p className="text-teal-200 text-sm mt-1">Sistema de Gestión Médica</p>
           </div>
 
@@ -149,7 +149,7 @@ export default function Login() {
         </div>
 
         <p className="text-center text-teal-300 text-xs mt-6">
-          © 2024 ClinicApp — Todos los derechos reservados
+          © ClinCore — Todos los derechos reservados
         </p>
       </div>
     </div>
